@@ -1,0 +1,38 @@
+# عالم صغير جوه عملية واحدة: بوابات (سجلات) + بحث بالنية. نموذج للفكرة، مش شبكة حقيقية.
+# كل بوابة بتعلن قدراتها (caps) كدوال، والبحث بيطابق النية بالمنطقة والقدرة، مش بعنوان موقع.
+
+use "quote.nia"
+
+fn mazaya_quote(args) => {
+  price: quote(args.area, args.floors, args.kind),
+  days: duration_days(args.area, args.floors),
+}
+
+fn rival_quote(args) => {
+  price: quote(args.area, args.floors, args.kind) * 0.9,
+  days: duration_days(args.area, args.floors) + 5,
+}
+
+let gates = [
+  {name: "مكتب مزايا", region: "luxor", caps: {"quote.request": mazaya_quote}},
+  {name: "مكتب منافس", region: "luxor", caps: {"quote.request": rival_quote}},
+  {name: "مكتب القاهرة", region: "cairo", caps: {"quote.request": mazaya_quote}},
+  {name: "متجر طيبة", region: "luxor", caps: {"order.place": fn(a) => "تم"}},
+]
+
+# النية: عايز إيه وفين. مفيش لينك ولا عنوان.
+fn find(gates: list, cap: text, region: text) -> list
+  ensure len(result) <= len(gates)
+  example (gates, "quote.request", "luxor") -> [gates[0], gates[1]]
+{
+  filter(gates, fn(g) => g.region == region and has(g.caps, cap))
+}
+
+let intent = {want: "quote.request", region: "luxor", args: {area: 180, floors: 2, kind: "house"}}
+let answers = map(find(gates, intent.want, intent.region),
+                  fn(g) => {gate: g.name, reply: g.caps[intent.want](intent.args)})
+
+for a in sort_by(answers, fn(a) => a.reply.price) {
+  print(a.gate, "→", a.reply.price, "جنيه،", a.reply.days, "يوم")
+}
+print("بصمة النية:", hash(intent))

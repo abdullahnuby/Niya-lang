@@ -1,0 +1,35 @@
+# أول برنامج: قيم ودوال وحلقات وقوائم وسجلات
+
+print("أهلاً بيك في نية")
+
+let name = "عبدالله"
+print("مرحباً {name}، الحساب: {2 + 3 * 4}")
+
+# دوال (واحدة بـ => والتانية بجسم)
+fn square(x) => x * x
+
+fn fib(n) {
+  if n < 2 { n } else { fib(n - 1) + fib(n - 2) }
+}
+
+print("مربع 12 =", square(12))
+print("fib(20) =", fib(20))
+
+# var بس هو اللي بيتغير. let ثابت.
+var total = 0
+for i in range(1, 11) { total += i }
+print("مجموع 1 لـ 10 =", total)
+
+# قوائم وسجلات (ثابتة: كل عملية بترجّع نسخة جديدة)
+let shop = {name: "طيبة", items: ["شراب", "تيشيرت"]}
+let shop2 = set(shop, "items", push(shop.items, "بنطلون"))
+print(shop.items, "->", shop2.items)
+
+# دوال بتاخد دوال
+let evens = filter(range(1, 21), fn(x) => x % 2 == 0)
+print(evens, "مجموعها", sum(evens))
+print(map(["a", "b"], upper))
+
+# مدخلات بالاسم
+fn area(w, h) => w * h
+print(area(h: 4, w: 5))

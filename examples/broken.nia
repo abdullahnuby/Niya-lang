@@ -1,0 +1,16 @@
+# كود فيه عيبين مقصودين. niya check لازم يمسكهم من غير ما تكتب ولا اختبار.
+
+# 1) معادلة المدة /8 بدل /12 (بتكسر الـ example والـ ensure)
+fn duration_days(area: number in 30..1000, floors: int in 1..10) -> int
+  ensure result <= area * floors / 10 + 30
+  example (180, 2) -> 44
+{
+  ceil(area * floors / 8) + 14
+}
+
+# 2) قسمة على b ممكن تبقى صفر عند حد المدى
+fn ratio(a: number in 0..100, b: number in 0..100) -> number
+  ensure result >= 0
+{
+  a / b
+}

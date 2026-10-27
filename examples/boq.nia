@@ -1,0 +1,37 @@
+# مقايسة بنود: أسعار غير مؤكدة (±) بتتنقل في الحساب لحد الإجمالي، والقرار صريح.
+
+fn boq_total(items: list) -> number
+  require len(items) > 0
+  ensure result.low >= 0
+  example ([{qty: 2, price: 100}, {qty: 3, price: 50}]) -> 350
+  example ([{qty: 10, price: 100 ± 10%}]) -> 1000 ± 10%
+{
+  var t = 0
+  for it in items { t += it.qty * it.price }
+  t
+}
+
+# قرار على ميزانية: لو مش محسوم بنقول "maybe" بدل ما نخمّن
+fn verdict(total: number in 0..2000000, spread: number in 0..30, budget: number in 0..2000000) -> "safe" | "maybe" | "over"
+  ensure spread > 0 or result != "maybe"
+  example (900000, 10, 1000000) -> "safe"
+  example (1500000, 10, 1000000) -> "over"
+  example (1000000, 10, 1000000) -> "maybe"
+{
+  let t = total ± total * spread / 100
+  if t.high <= budget { "safe" } else if t.low > budget { "over" } else { "maybe" }
+}
+
+let items = [
+  {name: "خرسانة", qty: 120, price: 2800 ± 8%},
+  {name: "حديد", qty: 14, price: 42000 ± 12%},
+  {name: "طوب", qty: 30, price: 1800 ± 5%},
+]
+let total = boq_total(items)
+print("الإجمالي:", total)
+print("المتوقع", total.mid, "| أحسن حالة", total.low, "| أسوأ حالة", total.high)
+
+let budget = 1000000
+if total.high <= budget { print("داخل الميزانية حتى في أسوأ حالة") }
+else if total.low > budget { print("خارج الميزانية حتى في أحسن حالة") }
+else { print("مش محسوم: ممكن يتخطى الميزانية، راجع البنود الأكتر تذبذب") }

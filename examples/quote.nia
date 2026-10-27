@@ -1,0 +1,25 @@
+# مقايسة تقريبية. الأسعار توضيحية: حط أسعار الأقصر الحقيقية في rate_per_m2.
+# العقد (ensure / example) بيتكتب بين رأس الدالة وجسمها، وبيتحقق بـ: niya check
+
+let rate_per_m2 = {house: 3500, apartment: 3000, commercial: 4500}
+
+fn quote(area: number in 30..1000, floors: int in 1..10, kind: "house" | "apartment" | "commercial") -> number
+  ensure result > 0
+  ensure result <= area * floors * 8000
+  example (180, 2, "house") -> 1260000
+  example (area: 120, floors: 3, kind: "apartment") -> 1100000 ± 5%
+{
+  area * floors * rate_per_m2[kind]
+}
+
+fn duration_days(area: number in 30..1000, floors: int in 1..10) -> int
+  ensure result >= 1
+  ensure result <= area * floors / 10 + 30
+  example (180, 2) -> 44
+{
+  ceil(area * floors / 12) + 14
+}
+
+# الملف ده مكتبة (بوابة مقايسة): جرّبه بـ
+#   niya call examples/quote.nia quote 180 2 house
+#   niya check examples/quote.nia
