@@ -40,6 +40,10 @@ def run(wd, file, fn, *args):
 
 
 def main():
+    try:                                          # كونسول ويندوز بيبوّظ العربي من غير ده
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, OSError):
+        pass
     dp, ap, bp = free_port(), free_port(), free_port()
     directory = f"127.0.0.1:{dp}"
     procs = []
