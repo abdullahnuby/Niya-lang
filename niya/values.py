@@ -13,6 +13,11 @@ class Unc:
         self.lo, self.nom, self.hi = lo, nom, hi
 
 
+class Secret(str):
+    """نص سري (مفتاح خاص): بيتعرض <secret> ومينفعش يتبعت على الشبكة ولا يتخزن في المحتوى."""
+    __slots__ = ()
+
+
 def mk_unc(lo, nom, hi):
     if lo > hi:
         lo, hi = hi, lo
@@ -75,6 +80,8 @@ def fmt_num(x):
 
 
 def show_repr(v):
+    if isinstance(v, Secret):
+        return "<secret>"
     if v is None:
         return "nil"
     if isinstance(v, bool):
@@ -95,7 +102,7 @@ def show_repr(v):
 
 
 def show(v):
-    return v if isinstance(v, str) else show_repr(v)
+    return v if isinstance(v, str) and not isinstance(v, Secret) else show_repr(v)
 
 
 def canon(v):

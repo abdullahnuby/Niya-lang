@@ -29,8 +29,16 @@ def parse_cli_value(s):
     return {"true": True, "false": False, "nil": None}.get(s, s)
 
 
+def _allow(spec):
+    got = {x.strip() for x in (spec or "").split(",") if x.strip()}
+    bad = got - {"net", "fs", "all"}
+    if bad:
+        raise NiyaError(f"صلاحية مش معروفة: {', '.join(sorted(bad))} (المتاح: net, fs, all)")
+    return got
+
+
 def cmd_run(a):
-    it = Interp(fuel=a.fuel)
+    it = Interp(fuel=a.fuel, allow=_allow(a.allow))
     it.run_file(a.file)
     return 0
 
@@ -51,7 +59,7 @@ def cmd_check(a):
 
 
 def cmd_call(a):
-    it = Interp(fuel=a.fuel)
+    it = Interp(fuel=a.fuel, allow=_allow(a.allow))
     env = it.run_file(a.file)
     cell = env.lookup(a.fn)
     if cell is None:
@@ -71,7 +79,7 @@ def cmd_call(a):
 
 
 def cmd_repl(a):
-    it = Interp()
+    it = Interp(allow=_allow(a.allow))
     it.repl = True
     env = it.new_module_env()
     print(f"نية {__version__}  (اكتب exit() أو Ctrl-D للخروج)")
@@ -118,6 +126,7 @@ def _main(argv):
     r = sub.add_parser("run", help="شغّل ملف .nia")
     r.add_argument("file")
     r.add_argument("--fuel", type=int, default=5_000_000, help="حد الخطوات (يمنع الحلقات اللانهائية)")
+    r.add_argument("--allow", default="", help="صلاحيات: net (شبكة) fs (ملفات المفاتيح) all. الافتراضي: ولا واحدة")
     c = sub.add_parser("check", help="اتحقق من العقود: example + ensure/require بحالات حدود وعشوائية")
     c.add_argument("file")
     c.add_argument("--seed", type=int, default=0)
@@ -127,7 +136,9 @@ def _main(argv):
     k.add_argument("fn")
     k.add_argument("args", nargs="*")
     k.add_argument("--fuel", type=int, default=5_000_000)
-    sub.add_parser("repl", help="سطر أوامر تفاعلي")
+    k.add_argument("--allow", default="", help="صلاحيات: net, fs, all")
+    rp = sub.add_parser("repl", help="سطر أوامر تفاعلي")
+    rp.add_argument("--allow", default="", help="صلاحيات: net, fs, all")
     a = ap.parse_args(argv)
     path = getattr(a, "file", None)
     try:

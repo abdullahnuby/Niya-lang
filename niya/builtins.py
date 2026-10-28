@@ -243,5 +243,8 @@ def install(it):
     reg("error", _error, "خطأ")
     reg("hash", _hash, "بصمة")
 
+    from .world_builtins import install_world
+    install_world(it, reg)
+
     for name, b in B.items():
         it.root.define(name, b)

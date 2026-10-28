@@ -1,0 +1,26 @@
+# بوابة منافسة بعقد مختلف: أرخص 10% لكن بتقبل لحد 6 أدوار ومن غير النوع "commercial".
+
+use "../quote.nia"
+
+fn rival_quote(area: number in 30..1000, floors: int in 1..6, kind: "house" | "apartment") -> number
+  ensure result > 0
+  example (180, 2, "house") -> 1134000
+{
+  quote(area, floors, kind) * 0.9
+}
+
+fn main(port: int in 1024..65535, directory: text = "", requests: int in 1..100000 = 20,
+        bind: text = "127.0.0.1", public: text = "") {
+  let key = key_open("rival.key")
+  let addr = if public == "" { "{bind}:{port}" } else { public }
+  let handlers = {"quote.request": rival_quote}
+  let manifest = gate_manifest(key, {name: "مكتب منافس", region: "luxor", tags: ["engineering"], addr: addr}, handlers)
+  if directory != "" {
+    let r = gate_announce(directory, key, manifest)
+    print("إعلان عند الدليل:", r.status)
+  }
+  gate_serve({
+    port: port, key: key, manifest: manifest, handlers: handlers, host: bind, max: requests, idle: 120,
+    on_ready: fn(p) => print("المنافس شغّال على", addr, "| هويته:", key.id)
+  })
+}

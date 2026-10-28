@@ -46,7 +46,8 @@ class Env:
 
 
 class Interp:
-    def __init__(self, fuel=5_000_000, out=None):
+    def __init__(self, fuel=5_000_000, out=None, allow=()):
+        self.allow = set(allow)     # صلاحيات: net (شبكة) fs (ملفات) all
         self.out = out or sys.stdout
         self.fuel = fuel
         self.depth = 0
@@ -70,6 +71,10 @@ class Interp:
         self.fuel -= 1
         if self.fuel < 0:
             raise FuelError("الكود خد خطوات أكتر من الحد (غالباً حلقة لا نهائية)", line)
+
+    def need_cap(self, name):
+        if "all" not in self.allow and name not in self.allow:
+            raise NiyaError(f"ممنوع: العملية دي محتاجة صلاحية '{name}' (شغّل بـ --allow {name})")
 
     @staticmethod
     def _at(e, line):

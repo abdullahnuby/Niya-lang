@@ -1,0 +1,21 @@
+# بوابة مقايسة. قدرتها "quote.request" هي دالة quote نفسها: توقيعها (الأنواع والمدى والقيم المسموحة)
+# هو بيان البوابة، والعقد اللي جواها هو اللي بيرفض الطلبات الغلط. مفيش كود تحقق مكتوب باليد.
+#   niya call examples/world/gate_mazaya.nia main 7001 directory=127.0.0.1:7000 --allow net,fs
+
+use "../quote.nia"
+
+fn main(port: int in 1024..65535, directory: text = "", requests: int in 1..100000 = 20,
+        bind: text = "127.0.0.1", public: text = "") {
+  let key = key_open("mazaya.key")
+  let addr = if public == "" { "{bind}:{port}" } else { public }
+  let handlers = {"quote.request": quote}
+  let manifest = gate_manifest(key, {name: "مكتب مزايا", region: "luxor", tags: ["engineering"], addr: addr}, handlers)
+  if directory != "" {
+    let r = gate_announce(directory, key, manifest)
+    print("إعلان عند الدليل:", r.status)
+  }
+  gate_serve({
+    port: port, key: key, manifest: manifest, handlers: handlers, host: bind, max: requests, idle: 120,
+    on_ready: fn(p) => print("مزايا شغّالة على", addr, "| هويتها:", key.id)
+  })
+}

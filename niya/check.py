@@ -176,6 +176,6 @@ def check_file(path, seed=0, fuzz=300):
         c = cell[0]
         if isinstance(c, Closure) and c.file == path:
             fd = c.fn
-            if fd.clauses or fd.hole or any(p.type for p in fd.params):
+            if fd.clauses or fd.hole:
                 reports.append(verify_closure(it, c, seed, fuzz))
     return reports, out.getvalue()

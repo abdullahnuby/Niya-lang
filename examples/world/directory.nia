@@ -1,0 +1,11 @@
+# دليل بوابات: بيستقبل الإعلانات (ANNOUNCE) ويجاوب على البحث (FIND).
+# مبيصدّقش حد: بيتحقق من توقيع كل إعلان بس. تشغيله:
+#   niya call examples/world/directory.nia main 7000 --allow net,fs
+
+fn main(port: int in 1024..65535, requests: int in 1..100000 = 20, bind: text = "127.0.0.1") {
+  let key = key_open("directory.key")
+  gate_serve({
+    port: port, key: key, host: bind, max: requests, idle: 120,
+    on_ready: fn(p) => print("الدليل شغال على", p, "| هويته:", key.id)
+  })
+}

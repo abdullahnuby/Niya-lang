@@ -1,0 +1,36 @@
+# عميل: بيدوّر بالنية (القدرة + المنطقة) مش بعنوان، وبيكلّم كل بوابة لاقاها بعد ما يتأكد من هويتها.
+#   niya call examples/world/client.nia main 127.0.0.1:7000 --allow net
+
+fn main(directory: text, area: number in 30..1000 = 180, floors: int in 1..10 = 2, kind: text = "house") {
+  let key = key_new()
+  let gates = gate_find(directory, key, {cap: "quote.request", region: "luxor"})
+  print("لقيت", len(gates), "بوابة (توقيع كل إعلان اتفحص)")
+  var offers = []
+  for g in gates {
+    let r = gate_call(g.body.addr, key, "quote.request", {area: area, floors: floors, kind: kind}, g.from)
+    if r.status == "ok" {
+      offers = push(offers, {gate: g.body.name, price: r.data})
+    } else {
+      print("  ", g.body.name, "رفضت:", r.msg)
+    }
+  }
+  for o in sort_by(offers, fn(o) => o.price) { print("عرض:", o.gate, "→", o.price, "جنيه") }
+}
+
+# طلب غلط عمداً (مساحة 5000): الرفض بييجي من عقد البوابة نفسها
+fn probe(directory: text) {
+  let key = key_new()
+  for g in gate_find(directory, key, {cap: "quote.request"}) {
+    let r = gate_call(g.body.addr, key, "quote.request", {area: 5000, floors: 2, kind: "house"}, g.from)
+    print(g.body.name, "→", r.status, ":", r.msg)
+  }
+}
+
+# بوابة بتدّعي هوية غير اللي أنا مستنيها: لازم العميل يرفض الرد
+fn impostor(directory: text) {
+  let key = key_new()
+  let g = gate_find(directory, key, {cap: "quote.request"})[0]
+  let wrong = "bab:ed25519:" + join(map(range(32), fn(i) => "00"), "")
+  gate_call(g.body.addr, key, "quote.request", {area: 100, floors: 1, kind: "house"}, wrong)
+  print("ده مفروض ما يتطبعش")
+}
